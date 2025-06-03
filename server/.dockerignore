@@ -1,0 +1,4 @@
+node_modules
+dist
+vars/.env
+.git

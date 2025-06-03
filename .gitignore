@@ -1,0 +1,59 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+
+# Vite
+.vite/
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+debug.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv env files
+.env
+.env.*
+
+# Optional npm cache directory
+.npm
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+coverage/
+*.lcov
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+
+# Custom app folders
+vars/
+server/vars/
+
+# Others
+*.swp
+*.bak
+*.tmp
