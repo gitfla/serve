@@ -1,4 +1,4 @@
-import { useState, DragEvent } from 'react'
+import { useState, type DragEvent } from 'react'
 import { uploadTextFile } from '../services/api'
 
 const TextUpload = () => {

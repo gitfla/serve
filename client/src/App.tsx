@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import UploadPage from './pages/UploadPage'
+import ConversationPage from './pages/ConversationPage'
 
 export default function App() {
     return (
@@ -24,11 +25,20 @@ export default function App() {
                     >
                         Upload
                     </NavLink>
+                    <NavLink
+                        to="/conversation"
+                        className={({ isActive }) =>
+                            isActive ? 'text-blue-600 font-semibold' : 'text-gray-600'
+                        }
+                    >
+                        Conversation
+                    </NavLink>
                 </nav>
 
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/upload" element={<UploadPage />} />
+                    <Route path="/conversation" element={<ConversationPage />} />
                 </Routes>
             </div>
         </Router>

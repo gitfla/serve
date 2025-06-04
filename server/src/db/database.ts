@@ -1,6 +1,6 @@
-const { Kysely, MysqlDialect } = require('kysely');
-const mysql = require('mysql2');
-const dotenv = require('dotenv');
+import {Kysely, MysqlDialect} from 'kysely';
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
 
 dotenv.config({ path: './vars/.env'});
 

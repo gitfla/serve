@@ -1,5 +1,7 @@
 //import { uploadToGCS } from '../utils/gcs.js';
 //import { insertBookAndWriter } from '../utils/db.js';
+import {uploadFileToGCS} from "./gcs.service";
+
 const multer = require('multer')
 const db = require('../db/database');
 
@@ -19,6 +21,7 @@ export const handleUploadText = async ({ writerName, title, fileBuffer, fileName
     let writer_id: number;
 
     if (existingWriter) {
+        console.log("writer already existed, id:", existingWriter.writer_id);
         writer_id = existingWriter.writer_id;
     } else {
         const newWriter = await db
@@ -27,7 +30,12 @@ export const handleUploadText = async ({ writerName, title, fileBuffer, fileName
             .executeTakeFirstOrThrow();
 
         writer_id = newWriter.insertId;
+        console.log("writer created, id:", writer_id);
     }
+
+    // upload to GCS and get blob_id
+    const blobId = await uploadFileToGCS(fileBuffer, writerName)
+    console.log("blob uploaded to bucket, blobId:", blobId);
 
     // Insert text
     const insertedText = await db
@@ -35,9 +43,9 @@ export const handleUploadText = async ({ writerName, title, fileBuffer, fileName
         .values({
             title,
             text_writer: writer_id,
-            blob_id: 1,
+            blob_id: blobId,
         })
         .executeTakeFirstOrThrow();
 
-    return insertedText;
+    return insertedText.insertId as number;
 };

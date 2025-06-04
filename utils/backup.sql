@@ -6,7 +6,7 @@ CREATE TABLE `texts` (
   `text_id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(90) NOT NULL,
   `text_writer` int NOT NULL,
-  `blob_id` int NOT NULL,
+  `blob_id` varchar(90) NOT NULL,
   PRIMARY KEY (`text_id`),
   KEY `text_writer_idx` (`text_writer`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

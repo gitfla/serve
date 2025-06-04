@@ -7,5 +7,5 @@
     "skipLibCheck": true,
     "outDir": "./dist" // Output directory for compiled files
   },
-"include": ["src"]
+"include": ["src", "src/**/*"]
 }
