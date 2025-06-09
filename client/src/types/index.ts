@@ -9,6 +9,13 @@ export interface Writer {
     writerName: string
 }
 
+export interface Text {
+    textId: number
+    title: string
+    textWriter: number
+    blobId: string
+}
+
 export interface Sentence {
     sentenceId: number
     textId: number

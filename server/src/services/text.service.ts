@@ -1,6 +1,7 @@
 //import { uploadToGCS } from '../utils/gcs.js';
 //import { insertBookAndWriter } from '../utils/db.js';
-import {uploadFileToGCS} from "./gcs.service";
+import {deleteBlob, uploadFileToGCS} from "./gcs.service";
+import {deleteWriterIfNecessary} from "./writer.service";
 
 const multer = require('multer')
 const db = require('../db/database');
@@ -27,10 +28,11 @@ export const handleUploadText = async ({ writerName, title, fileBuffer, fileName
         const newWriter = await db
             .insertInto('writers')
             .values({ writer_name: writerName })
+            .returning('writer_id')
             .executeTakeFirstOrThrow();
 
-        writer_id = newWriter.insertId;
-        console.log("writer created, id:", writer_id);
+        writer_id = newWriter.writer_id;
+        console.log("writer created, id:", writer_id, "new writer: ", newWriter);
     }
 
     // upload to GCS and get blob_id
@@ -45,7 +47,58 @@ export const handleUploadText = async ({ writerName, title, fileBuffer, fileName
             text_writer: writer_id,
             blob_id: blobId,
         })
+        .returning('text_id')
         .executeTakeFirstOrThrow();
 
-    return insertedText.insertId as number;
+    return insertedText.text_id as number;
 };
+
+/**
+ * Returns all blob IDs associated with a given writer ID.
+ * @param writerId - The ID of the writer.
+ * @returns An array of blob ID strings.
+ */
+export const getBlobIdsForWriter = async (writerId: number): Promise<string[]> => {
+    const rows = await db
+        .selectFrom('texts')
+        .select(['blob_id'])
+        .where('text_writer', '=', writerId)
+        .execute()
+
+    return rows.map(row => row.blob_id)
+}
+
+export const fetchTexts = async () => {
+    return await db
+        .selectFrom('texts')
+        .select(['text_id as textId', 'title as title', 'text_writer as textWriter', 'blob_id as blobId'])
+        .execute()
+}
+
+
+export const getText = async (textId: number) => {
+    return await db
+        .selectFrom('texts')
+        .select(['text_id as textId', 'title as title', 'text_writer as textWriter', 'blob_id as blobId'])
+        .where('text_id', '=', textId)
+        .executeTakeFirstOrThrow()
+}
+
+
+export const deleteText = async (textId: number) => {
+    const text= await getText(textId)
+    const writerId = text.textWriter
+    const blobId = text.blobId
+    //TODO(): Wrap these in a db transaction:
+    await deleteTextById(textId)
+    await deleteWriterIfNecessary(writerId)
+
+    await deleteBlob(blobId)
+}
+
+export const deleteTextById = async(textId: number): Promise<void> => {
+    await db
+        .deleteFrom('texts')
+        .where('text_id', '=', textId)
+        .execute()
+}

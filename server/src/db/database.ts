@@ -1,11 +1,12 @@
-import {Kysely, MysqlDialect} from 'kysely';
-import mysql from 'mysql2';
+import {Kysely, PostgresDialect} from 'kysely';
+import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config({ path: './vars/.env'});
 
 const {
     DB_HOST,
+    DB_PORT,
     DB_USER,
     DB_PASSWORD,
     DB_NAME,
@@ -16,16 +17,17 @@ if (!DB_HOST || !DB_USER || !DB_PASSWORD || !DB_NAME) {
     throw new Error('Missing DB environment variables');
 }
 
-const pool = mysql.createPool({
+const pool = new Pool({
     host: DB_HOST,
+    port: DB_PORT ? parseInt(DB_PORT, 10) : 5432,
     user: DB_USER,
     password: DB_PASSWORD,
     database: DB_NAME,
-    ssl: DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
+    ssl: DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
 const db = new Kysely({
-    dialect: new MysqlDialect({ pool }),
+    dialect: new PostgresDialect({ pool }),
 });
 
 module.exports = db;

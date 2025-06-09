@@ -21,3 +21,22 @@ export async function fetchWriters(): Promise<Writer[]> {
     const response = await axios.get(`${API_BASE}/api/writers`)
     return response.data
 }
+
+export async function fetchTexts(): Promise<Text[]> {
+    const response = await axios.get(`${API_BASE}/api/texts`)
+    return response.data
+}
+
+export async function preProcessWriters(writerIds: number[])  {
+    const response = await axios.post(`${API_BASE}/api/preprocess` , {params : {writerIds}})
+    return response.data
+}
+
+
+export async function deleteText(textId: number) {
+    return axios.delete(`${API_BASE}/api/texts/${textId}`)
+}
+
+export async function deleteWriter(writerId: number) {
+    return axios.delete(`${API_BASE}/api/writers/${writerId}`)
+}

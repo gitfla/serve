@@ -1,5 +1,6 @@
 // server/src/controllers/texts.controller.js
-import { handleUploadText } from '../services/text.service';
+import {deleteText, handleUploadText} from '../services/text.service';
+import { fetchTexts, getText } from '../services/text.service'
 
 exports.uploadText = async (req, res) => {
     try {
@@ -18,7 +19,7 @@ exports.uploadText = async (req, res) => {
             fileName: file.originalname
         })
 
-        res.status(201).json({ message: 'Upload successful', data: Number(result.insertId) });
+        res.status(201).json({ message: 'Upload successful', data: Number(result) });
         res.send();
     } catch (error) {
         console.error(error);
@@ -26,4 +27,43 @@ exports.uploadText = async (req, res) => {
         res.send();
     }
 };
+
+exports.fetchTexts = async (req, res) => {
+    try {
+        const texts = await fetchTexts();
+        res.json(texts)
+    } catch (error) {
+        console.error('Error fetching texts:', error)
+        res.status(500).json({ error: 'Internal server error' })
+    }
+};
+
+exports.getText = async (req, res) => {
+    try {
+        const {textId} = req.body
+        const text = await getText(textId);
+        res.json(text);
+    } catch (error) {
+        console.error('Error fetching text:', error)
+        res.status(500).json({error: 'Internal server error'})
+    }
+};
+
+exports.deleteText = async (req, res) => {
+    const textId = parseInt(req.params.id, 10)
+    if (isNaN(textId)) {
+        return res.status(400).json({ error: 'Invalid text ID' })
+    }
+    try {
+        await deleteText(textId)
+        res.status(200).json({ success: true });
+        res.send();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+        res.send();
+    }
+};
+
+
 

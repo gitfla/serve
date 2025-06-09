@@ -35,3 +35,26 @@ export const uploadFileToGCS = async (
 
     return file.name // blob ID to store in DB
 }
+
+/**
+ * Downloads a file (blob) from Google Cloud Storage and returns its content as a Buffer.
+ * @param blobName - The full path of the blob in the bucket (e.g. "texts/uuid-filename.txt").
+ * @returns A Buffer containing the blob's content.
+ */
+export const downloadBlob = async (blobName: string): Promise<Buffer> => {
+    const file = bucket.file(blobName)
+    const [contents] = await file.download()
+    return contents
+}
+
+/**
+ * Deletes a file (blob) from Google Cloud Storage.
+ * @param blobName - The full path of the blob in the bucket (e.g. "texts/uuid-filename.txt").
+ * @returns A boolean indicating whether the deletion was successful.
+ */
+export const deleteBlob = async (blobName: string): Promise<boolean> => {
+    const file = bucket.file(blobName)
+    await file.delete()
+    console.log(`Deleted blob: ${blobName}`)
+    return true
+}
