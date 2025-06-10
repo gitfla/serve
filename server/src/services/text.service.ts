@@ -1,5 +1,3 @@
-//import { uploadToGCS } from '../utils/gcs.js';
-//import { insertBookAndWriter } from '../utils/db.js';
 import {deleteBlob, uploadFileToGCS} from "./gcs.service";
 import {deleteWriterIfNecessary} from "./writer.service";
 

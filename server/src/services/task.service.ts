@@ -1,0 +1,34 @@
+// task.service.ts
+import { CloudTasksClient } from '@google-cloud/tasks'
+
+import dotenv from 'dotenv';
+import path from "path";
+
+const client = new CloudTasksClient(
+    {keyFilename: path.join(__dirname, '../../vars/task-key.json'), // adjust if needed
+})
+dotenv.config({ path: './vars/.env'});
+
+const PROJECT = process.env.GCP_PROJECT_ID!
+const QUEUE = process.env.GCP_QUEUE_NAME!         // e.g. "process-book-queue"
+const LOCATION = process.env.GCP_LOCATION!        // e.g. "us-central1"
+const TASK_URL = process.env.TASK_HANDLER_URL!    // e.g. https://your-domain.com/internal/process-job
+
+export const enqueueTextProcessingTask = async (jobId: number) => {
+    console.log("PROJECT, QUEUE, LOCATION, TASK_URL", PROJECT, QUEUE, LOCATION, TASK_URL);
+    const parent = client.queuePath(PROJECT, LOCATION, QUEUE)
+
+    const task = {
+        httpRequest: {
+            httpMethod: 'POST',
+            url: `${TASK_URL}/internal/process`,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: Buffer.from(JSON.stringify({ jobId })).toString('base64'),
+        },
+    }
+
+    const [response] = await client.createTask({ parent, task })
+    return response
+}
