@@ -23,14 +23,27 @@ const limiter = new Bottleneck({
 
 const countTokens = (text: string) => encoder.encode(text).length
 
-const splitIntoSentences = (text: string): string[] =>
-    sbd.sentences(text, {
-        newline_boundaries: true,
-        html_boundaries: true,
+const cleanText = (text: string): string => {
+    return text
+        .replace(/[\r\n]+/g, ' ')              // Replace newlines with spaces
+        .replace(/\s+/g, ' ')                  // Collapse multiple spaces
+        .replace(/(\s*[\.\?!])(\d+)/g, '$1 $2') // Fix sentence breaks before numbers (e.g. "?1" → "? 1")
+        .trim();
+}
+
+const splitIntoSentences = (text: string): string[] => {
+    const cleaned = cleanText(text);
+    const sentences = sbd.sentences(cleaned, {
+        newline_boundaries: false, // disable sentence breaks on newlines
+        html_boundaries: false,
         sanitize: true,
         allowed_tags: false,
         abbreviations: ['Mr', 'Mrs', 'Dr', 'Ms', 'Prof'],
-    })
+    });
+
+    // Optional post-filter: remove trivial "sentences" like lone numbers
+    return sentences.filter(s => s.trim().length > 2 && !/^\d+\.?$/.test(s.trim()));
+}
 
 const chunkSentences = (
     sentences: string[],
@@ -66,17 +79,26 @@ const chunkSentences = (
 export const embedText = async (
     fullText: string,
     writerId: number,
-    textId: number
+    textId: number,
+    startFrom: number
 ) => {
-    const sentences = splitIntoSentences(fullText)
+    const allSentences = splitIntoSentences(fullText)
+    const sentences = allSentences.slice(startFrom)
+    if (startFrom > 0) {
+        console.log(`⏭️ Skipping first ${startFrom} sentences, resuming from index ${startFrom}`)
+    }
+
+    if (sentences.length === 0) {
+        console.log('✅ All sentences already embedded.')
+        return { totalSentences: allSentences.length }
+    }
+
     const chunks = chunkSentences(sentences)
 
-    // 1. Insert sentences
-    const sentenceIds = await insertSentences(sentences, textId)
-
-    // 2. Embed & store
     let sentenceOffset = 0
+
     for (const chunk of chunks) {
+        // 1. Embed first
         const response = await limiter.schedule(() =>
             cohere.embed({
                 texts: chunk,
@@ -91,13 +113,30 @@ export const embedText = async (
 
         const embeddings = response.embeddings as number[][]
 
-        const inserted = await insertEmbeddingsChunk(
-            writerId,
-            sentenceIds.slice(sentenceOffset, sentenceOffset + chunk.length),
-            embeddings
-        )
+        // 2. Prepare sentence insert
+        const indexedSentences = chunk.map((text, i) => ({
+            text,
+            text_id: textId,
+            sentence_index: startFrom + sentenceOffset + i,
+        }))
 
-        console.log(`✅ Inserted ${inserted.length} embeddings`)
+        // 3. Insert sentences and get their IDs
+        const inserted = await db
+            .insertInto('sentences')
+            .values(indexedSentences)
+            .returning(['sentence_id', 'sentence_index'])
+            .execute()
+
+        const sentenceIds = inserted.map(row => row.sentence_id)
+        const sentenceIndexes = inserted.map(row => row.sentence_index)
+
+        // 4. Insert embeddings using those IDs
+        await insertEmbeddingsChunk(writerId, sentenceIds, embeddings)
+
+        console.log(`✅ Stored ${embeddings.length} embeddings`)
+        console.log(`🔢 sentence_id range: ${sentenceIds[0]}–${sentenceIds[sentenceIds.length - 1]}`)
+        console.log(`🔢 sentence_index range: ${sentenceIndexes[0]}–${sentenceIndexes[sentenceIndexes.length - 1]}`)
+
         sentenceOffset += chunk.length
     }
 
@@ -108,12 +147,13 @@ export const embedText = async (
 
 const insertSentences = async (
     sentences: string[],
-    textId: number
+    textId: number,
+    startFrom: number,
 ): Promise<number[]> => {
     const insertData = sentences.map((text, index) => ({
         text,
         text_id: textId,
-        sentence_index: index,
+        sentence_index: startFrom+index,
     }))
 
     const inserted = await db
@@ -131,18 +171,31 @@ const insertEmbeddingsChunk = async (
     embeddings: number[][]
 ): Promise<number[]> => {
     if (sentenceIds.length !== embeddings.length) {
-        throw new Error('Mismatch between sentenceIds and embeddings')
+        throw new Error('Mismatch between sentence IDs and embeddings')
     }
 
-    const rows = sentenceIds.map((sentenceId, i) => {
-        const vector = sql.raw(`'[${embeddings[i].join(',')}]'::vector`)
-        return sql`(${sentenceId}, ${writerId}, ${vector})`
+    const values = embeddings.map((embedding, i) => {
+        const sentenceId = sentenceIds[i]
+        const vector = sql.raw(`'[${embedding.join(',')}]'::vector`)
+        return sql`(${sentenceId}, ${vector}, ${writerId})`
     })
 
-    await db.executeQuery(sql`
-        INSERT INTO sentence_embeddings (sentence_id, writer_id, embedding)
-        VALUES ${sql.join(rows, sql.raw(', '))}
-    `)
+    console.log(`🔹 Inserting ${embeddings.length} embeddings for writer ${writerId}`)
+    console.log(`🔹 Embedding shape: [${embeddings[0].length}]`)
+
+    await sql`
+    INSERT INTO sentence_embeddings (sentence_id, embedding, writer_id)
+    VALUES ${sql.join(values, sql.raw(', '))}
+  `.execute(db)
 
     return sentenceIds
+}
+export const getLastProcessedSentenceIndex = async (textId: number): Promise<number> => {
+    const result = await db
+        .selectFrom('sentences')
+        .where('text_id', '=', textId)
+        .select(db.fn.max('sentence_index').as('max'))
+        .executeTakeFirst()
+
+    return result?.max ?? -1 // -1 means start from index 0
 }

@@ -1,7 +1,7 @@
 // services/processingService.ts
 import {getBlobIdsForWriter, getText} from './text.service'
 import { downloadBlob } from './gcs.service'
-import {embedText} from "./embed.service";
+import {embedText, getLastProcessedSentenceIndex} from "./embed.service";
 import {enqueueTextProcessingTask} from "./task.service";
 
 const db = require('../db/database');
@@ -15,8 +15,10 @@ export async function handleProcessJob(textId: number) {
         const contentBuffer = await downloadBlob(text.blobId)
         const content = contentBuffer.toString().trim()
 
-        const alreadyEmbeddedCount = await getEmbeddedSentenceCount(text.textId)
-        const { totalSentences } = await embedText(content, text.textWriter, text.textId, alreadyEmbeddedCount)
+        const lastProcessed = await getLastProcessedSentenceIndex(text.textId)
+        const resumeFrom = lastProcessed + 1
+        console.log(`Calling embedText: lastProcessed ${lastProcessed}, resumeFrom: ${resumeFrom}`)
+        const { totalSentences } = await embedText(content, text.textWriter, text.textId, resumeFrom)
 
         console.log(`📦 Memory usage after embedding: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`)
         console.log(`✅ Finished embedding ${totalSentences} sentences for text ${textId}`)
