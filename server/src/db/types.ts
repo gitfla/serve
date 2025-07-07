@@ -33,6 +33,14 @@ export interface ConversationsWriters {
     writer_id: number;
 }
 
+export interface SentenceEmbedding {
+    id: number
+    writer_id: number
+    sentence: string
+    embedding: unknown // pgvector isn't strongly typed in Kysely yet
+    created_at: Date
+}
+
 export interface DB {
     writers: Writers;
     texts: Texts;

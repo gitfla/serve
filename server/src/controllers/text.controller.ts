@@ -1,6 +1,7 @@
 // server/src/controllers/texts.controller.js
 import { deleteText, handleUploadText, fetchTexts, getText } from '../services/text.service';
 import { enqueueTextProcessingTask} from '../services/task.service';
+import {createProcessingJob} from "../services/process.service";
 
 exports.uploadText = async (req, res) => {
     try {
@@ -21,7 +22,8 @@ exports.uploadText = async (req, res) => {
 
         // Enqueue background processing task
         console.log("enqueuing processing task, jobId:", result);
-        await enqueueTextProcessingTask(result)
+        await createProcessingJob(result);
+        await enqueueTextProcessingTask(result);
 
         res.status(201).json({ message: 'Upload successful', data: Number(result) });
         res.send();

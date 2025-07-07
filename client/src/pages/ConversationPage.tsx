@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Conversation from '../components/Conversation'
 import type { Writer } from '../types'
-import {preProcessWriters} from "../services/api.ts";
+import {processWriters} from "../services/api.ts";
 
 const ConversationPage = () => {
     const location = useLocation()
@@ -15,18 +15,19 @@ const ConversationPage = () => {
     useEffect(() => {
         if (!writers.length) return
 
-        const preprocess = async () => {
+        const process = async () => {
             try {
                 const writerIds = writers.map(w => w.writerId)
-                await preProcessWriters(writerIds)
+                //TODO(): change this
+                // await processWriters(writerIds)
                 setLoading(false)
             } catch (err: any) {
-                setError(err.response?.data?.message || err.message || 'Preprocessing failed.')
+                setError(err.response?.data?.message || err.message || 'processing failed.')
                 setLoading(false)
             }
         }
 
-        preprocess()
+        process()
     }, [writers])
 
     if (!writers.length) {

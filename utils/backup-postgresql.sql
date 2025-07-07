@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS conversations CASCADE;
 DROP TABLE IF EXISTS conversations_sentences CASCADE;
 DROP TABLE IF EXISTS conversations_writers CASCADE;
 DROP TABLE IF EXISTS sentences CASCADE;
+DROP TABLE IF EXISTS sentences_embeddings CASCADE;
 DROP TABLE IF EXISTS writers CASCADE;
 
 CREATE TABLE writers (
@@ -27,6 +28,16 @@ CREATE TABLE conversations (
                                timestamp TIMESTAMP NOT NULL
 );
 
+-- Sentences table (fine as-is)
+CREATE TABLE sentences (
+                           sentence_id SERIAL PRIMARY KEY,
+                           text VARCHAR(420) NOT NULL,
+                           text_id INTEGER NOT NULL,
+                           CONSTRAINT fk_text_id FOREIGN KEY (text_id)
+                               REFERENCES texts(text_id)
+);
+
+
 CREATE TABLE conversations_sentences (
                                          conversation_sentence_id SERIAL PRIMARY KEY,
                                          conversation INTEGER NOT NULL,
@@ -46,11 +57,35 @@ CREATE TABLE conversations_writers (
                                        CONSTRAINT fk_conversation_writer_writer FOREIGN KEY (writer_id)
                                            REFERENCES writers(writer_id)
 );
+CREATE EXTENSION IF NOT EXISTS vector;
 
-CREATE TABLE sentences (
-                           sentence_id SERIAL PRIMARY KEY,
-                           text VARCHAR(420) NOT NULL,
-                           text_id INTEGER NOT NULL,
-                           CONSTRAINT fk_text_id FOREIGN KEY (text_id)
-                               REFERENCES texts(text_id)
+-- Sentence embeddings table
+CREATE TABLE sentence_embeddings (
+                                     embedding_id SERIAL PRIMARY KEY,
+                                     sentence_id INTEGER NOT NULL,
+                                     embedding VECTOR(768) NOT NULL,
+                                     created_at TIMESTAMP DEFAULT NOW(),
+                                     CONSTRAINT fk_sentence_id FOREIGN KEY (sentence_id)
+                                         REFERENCES sentences(sentence_id)
+                                         ON DELETE CASCADE
+);
+
+-- Index for fast cosine similarity search
+CREATE INDEX ON sentence_embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+
+CREATE TABLE processing_jobs (
+                                 job_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+                                 text_id INTEGER NOT NULL,
+                                 status TEXT NOT NULL DEFAULT 'pending',  -- pending | processing | completed | failed
+                                 created_at TIMESTAMP DEFAULT NOW(),
+                                 updated_at TIMESTAMP DEFAULT NOW(),
+
+                                 error TEXT,  -- nullable, for failed jobs
+                                 started_at TIMESTAMP,
+                                 completed_at TIMESTAMP,
+
+                                 CONSTRAINT fk_text_id FOREIGN KEY (text_id)
+                                     REFERENCES texts(text_id)
+                                     ON DELETE CASCADE
 );

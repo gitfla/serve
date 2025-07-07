@@ -27,8 +27,8 @@ export async function fetchTexts(): Promise<Text[]> {
     return response.data
 }
 
-export async function preProcessWriters(writerIds: number[])  {
-    const response = await axios.post(`${API_BASE}/api/preprocess` , {params : {writerIds}})
+export async function processWriters(writerIds: number[])  {
+    const response = await axios.post(`${API_BASE}/api/process` , {params : {writerIds}})
     return response.data
 }
 

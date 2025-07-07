@@ -14,7 +14,7 @@ const QUEUE = process.env.GCP_QUEUE_NAME!         // e.g. "process-book-queue"
 const LOCATION = process.env.GCP_LOCATION!        // e.g. "us-central1"
 const TASK_URL = process.env.TASK_HANDLER_URL!    // e.g. https://your-domain.com/internal/process-job
 
-export const enqueueTextProcessingTask = async (jobId: number) => {
+export const enqueueTextProcessingTask = async (textId: number, delaySeconds = 0) => {
     console.log("PROJECT, QUEUE, LOCATION, TASK_URL", PROJECT, QUEUE, LOCATION, TASK_URL);
     const parent = client.queuePath(PROJECT, LOCATION, QUEUE)
 
@@ -25,10 +25,14 @@ export const enqueueTextProcessingTask = async (jobId: number) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: Buffer.from(JSON.stringify({ jobId })).toString('base64'),
+            body: Buffer.from(JSON.stringify({ textId })).toString('base64'),
+        },
+        scheduleTime: {
+            seconds: Math.floor(Date.now() / 1000) + delaySeconds,
         },
     }
 
     const [response] = await client.createTask({ parent, task })
+    console.log(`🕒 Task scheduled to run in ${delaySeconds}s:`, response.name)
     return response
 }

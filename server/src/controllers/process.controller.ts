@@ -3,19 +3,19 @@ import {handleProcessJob, handleProcessWriters} from '../services/process.servic
 
 exports.processJob = async (req, res) => {
     try {
-        const { jobId } = req.body
-        if (!jobId) {
+        const { textId } = req.body
+        if (!textId) {
             return res.status(400).json({ error: 'Missing jobId' })
         }
 
         // Run your background job logic here
         // e.g. processTextJob(jobId)
-        console.log("about to call handleProcessJob: ", jobId)
-        handleProcessJob(jobId).catch(console.error)
+        console.log("about to call handleProcessJob: ", textId)
+        handleProcessJob(textId).catch(console.error)
 
-        res.status(200).json({ message: `Processing started for job ${jobId}` })
+        res.status(200).json({ message: `Processing started for job ${textId}` })
     } catch (error) {
-        console.error('Erroçr processing job:', error)
+        console.error('Error processing job:', error)
         res.status(500).json({ error: 'Internal server error' })
     }
 }
