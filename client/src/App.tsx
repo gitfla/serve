@@ -50,7 +50,7 @@ export default function App() {
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/upload" element={<UploadPage />} />
-                        <Route path="/conversation" element={<ConversationPage />} />
+                        <Route path="/conversation/:conversationId" element={<ConversationPage />} />
                     </Routes>
                 </main>
             </div>

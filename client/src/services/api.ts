@@ -40,3 +40,38 @@ export async function deleteText(textId: number) {
 export async function deleteWriter(writerId: number) {
     return axios.delete(`${API_BASE}/api/writers/${writerId}`)
 }
+
+export async function startConversation(selectedWriters: Writer[]) {
+    const writerIds = selectedWriters.map(w => w.writerId)
+    const response = await axios.post(`${API_BASE}/api/conversation/start` , {writerIds})
+    return response.data as {
+        conversationId: number
+    }
+}
+
+export async function checkConversationExists(conversationId: number): Promise<{ valid: boolean }> {
+    try {
+        await axios.get(`${API_BASE}/api/conversation/${conversationId}`)
+        return { valid: true }
+    } catch (err: any) {
+        if (err.response?.status === 404) {
+            return { valid: false }
+        }
+        throw new Error(err.response?.data?.error || 'Failed to check conversation')
+    }
+}
+
+export async function sendConversationPrompt(prompt: string, conversationId: number) {
+    const response = await axios.post(`${API_BASE}/api/conversation/getNext`, {
+        prompt,
+        conversationId
+    })
+
+    // Assuming the backend returns: { response: 'the best match' }
+    return response.data as {
+        text: string
+        sentenceIndex: number
+        distance: number
+        writer: number
+    }
+}

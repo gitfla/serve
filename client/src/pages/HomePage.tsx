@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchWriters } from '../services/api'
+import {fetchWriters, startConversation} from '../services/api'
 import type { Writer } from '../types'
 import { useNavigate } from 'react-router-dom'
 
@@ -26,6 +26,17 @@ export default function HomePage() {
         }
     }
 
+    const handleStartConversation = async () => {
+        try {
+            const { conversationId } = await startConversation(selectedWriters)
+            console.log("FETCHING CONVERSATION ID:", conversationId)
+
+            navigate(`/conversation/${conversationId}`) // no state needed
+        } catch (err) {
+            console.error('Error starting conversation:', err)
+            alert('Failed to start conversation. Please try again.')
+        }
+    }
 
     return (
         <div>
@@ -61,8 +72,7 @@ export default function HomePage() {
                 {selectedWriters.length > 0 && (
                     <button
                         className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
-                        onClick={() => navigate(`/conversation`, {state: {writers: selectedWriters}})
-                        }
+                        onClick={handleStartConversation}
                     >
                         Start Conversation
                     </button>
