@@ -1,4 +1,4 @@
-import { fetchWriters } from '../services/writer.service'
+import {fetchWriters, getProcessingWriterIds} from '../services/writer.service'
 
 exports.fetchWriters = async (req, res) => {
     try {
@@ -6,6 +6,16 @@ exports.fetchWriters = async (req, res) => {
         res.json(writers)
     } catch (error) {
         console.error('Error fetching writers:', error)
+        res.status(500).json({ error: 'Internal server error' })
+    }
+};
+
+export const getProcessingWriters = async (req, res) => {
+    try {
+        const processingWriters = await getProcessingWriterIds()
+        res.json({ writerIds: processingWriters.map(w => w.text_writer) })
+    } catch (err) {
+        console.error('Error fetching processing writers:', err)
         res.status(500).json({ error: 'Internal server error' })
     }
 };

@@ -1,20 +1,33 @@
 import { useEffect, useState } from 'react'
-import {fetchWriters, startConversation} from '../services/api'
+import { fetchWriters, startConversation, getProcessingWriters } from '../services/api'
 import type { Writer } from '../types'
 import { useNavigate } from 'react-router-dom'
+import { FaSpinner } from 'react-icons/fa'
 
 export default function HomePage() {
     const [writers, setWriters] = useState<Writer[]>([])
     const [selectedWriters, setSelectedWriters] = useState<Writer[]>([])
+    const [processingWriterIds, setProcessingWriterIds] = useState<number[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const navigate = useNavigate()
 
     useEffect(() => {
-        fetchWriters()
-            .then(setWriters)
-            .catch((err) => setError(err.message))
-            .finally(() => setLoading(false))
+        const loadData = async () => {
+            try {
+                const [writersData, processingData] = await Promise.all([
+                    fetchWriters(),
+                    getProcessingWriters(),
+                ])
+                setWriters(writersData)
+                setProcessingWriterIds(processingData.writerIds)
+            } catch (err: any) {
+                setError(err.message)
+            } finally {
+                setLoading(false)
+            }
+        }
+        loadData()
     }, [])
 
     const toggleWriterSelection = (writer: Writer) => {
@@ -29,14 +42,14 @@ export default function HomePage() {
     const handleStartConversation = async () => {
         try {
             const { conversationId } = await startConversation(selectedWriters)
-            console.log("FETCHING CONVERSATION ID:", conversationId)
-
-            navigate(`/conversation/${conversationId}`) // no state needed
+            navigate(`/conversation/${conversationId}`)
         } catch (err) {
             console.error('Error starting conversation:', err)
             alert('Failed to start conversation. Please try again.')
         }
     }
+
+    const isProcessing = (writerId: number) => processingWriterIds.includes(writerId)
 
     return (
         <div>
@@ -48,18 +61,32 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {writers.map((writer) => {
                     const isSelected = selectedWriters.some(w => w.writerId === writer.writerId)
+                    const disabled = isProcessing(writer.writerId)
+
                     return (
                         <div
                             key={writer.writerId}
-                            onClick={() => toggleWriterSelection(writer)}
-                            className={`cursor-pointer bg-white p-4 rounded-lg border shadow-md transition ${
-                                isSelected
-                                    ? 'border-blue-500 ring-2 ring-blue-300'
-                                    : 'hover:shadow-lg'
+                            onClick={() => !disabled && toggleWriterSelection(writer)}
+                            className={`relative cursor-pointer bg-white p-4 rounded-lg border shadow-md transition ${
+                                disabled
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : isSelected
+                                        ? 'border-blue-500 ring-2 ring-blue-300'
+                                        : 'hover:shadow-lg'
                             }`}
                         >
                             <h2 className="text-xl font-semibold mb-2">{writer.writerName}</h2>
-                            <p className="text-sm text-gray-600">Click to {isSelected ? 'deselect' : 'select'} this writer.</p>
+                            <p className="text-sm text-gray-600">
+                                {disabled
+                                    ? 'Processing...'
+                                    : `Click to ${isSelected ? 'deselect' : 'select'} this writer.`}
+                            </p>
+
+                            {disabled && (
+                                <div className="absolute top-2 right-2 text-blue-500 animate-spin">
+                                    <FaSpinner />
+                                </div>
+                            )}
                         </div>
                     )
                 })}

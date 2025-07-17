@@ -22,6 +22,11 @@ export async function fetchWriters(): Promise<Writer[]> {
     return response.data
 }
 
+export async function getProcessingWriters(): Promise<Writer[]> {
+    const response = await axios.get(`${API_BASE}/api/writers/processing`)
+    return response.data
+}
+
 export async function fetchTexts(): Promise<Text[]> {
     const response = await axios.get(`${API_BASE}/api/texts`)
     return response.data

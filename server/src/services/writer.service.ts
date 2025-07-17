@@ -7,6 +7,15 @@ export const fetchWriters = async () => {
         .execute()
 }
 
+export async function getProcessingWriterIds(): Promise<{ text_writer: number }[]> {
+    return await db
+        .selectFrom('processing_jobs as pj')
+        .innerJoin('texts as t', 'pj.text_id', 't.text_id')
+        .select(['t.text_writer'])
+        .distinct()
+        .where('pj.status', '!=', 'completed')
+        .execute()
+}
 export async function deleteWriterById(writerId: number): Promise<void> {
     await db
         .deleteFrom('writers')

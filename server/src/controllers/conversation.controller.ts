@@ -1,5 +1,6 @@
 import {findBestMatchForPrompt, startConversation} from "../services/conversation.service";
 import { checkConversationExists as checkConversationExistsService } from '../services/conversation.service'
+import { NextWriter } from '../../../shared/nextWriter'
 
 exports.startConversation = async (req, res) => {
     try {
@@ -20,13 +21,13 @@ exports.startConversation = async (req, res) => {
 
 exports.getBestSentenceMatch = async (req, res) => {
     try {
-        const { prompt, conversationId } = req.body
+        const { prompt, conversationId, nextWriter } = req.body
 
         if (!conversationId || conversationId == 0) {
             return res.status(400).json({ message: 'ConversationId must be valid.' })
         }
 
-        const best = await findBestMatchForPrompt(prompt, conversationId)
+        const best = await findBestMatchForPrompt(prompt, conversationId, nextWriter)
 
         res.json({ best })
     } catch (err: any) {
