@@ -1,4 +1,8 @@
-import {fetchWriters, getProcessingWriterIds} from '../services/writer.service'
+import {
+    fetchWriters,
+    getProcessingWriterIds,
+    getWritersByConversation
+} from '../services/writer.service'
 
 exports.fetchWriters = async (req, res) => {
     try {
@@ -7,6 +11,20 @@ exports.fetchWriters = async (req, res) => {
     } catch (error) {
         console.error('Error fetching writers:', error)
         res.status(500).json({ error: 'Internal server error' })
+    }
+};
+
+exports.getWritersByConversation = async (req, res) => {
+    try {
+        const conversationId = parseInt(req.params.conversationId, 10);
+        if (isNaN(conversationId)) {
+            return res.status(400).json({ error: 'Invalid conversation ID' });
+        }
+        const writers = await getWritersByConversation(conversationId);
+        res.json(writers);
+    } catch (error) {
+        console.error('Error fetching writers for conversation:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 

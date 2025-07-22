@@ -7,6 +7,15 @@ export const fetchWriters = async () => {
         .execute()
 }
 
+export const getWritersByConversation = async (conversationId: number) => {
+    return await db
+        .selectFrom('writers as w')
+        .innerJoin('conversation_writers as cw', 'w.writer_id', 'cw.writer_id')
+        .where('cw.conversation_id', '=', conversationId)
+        .select(['w.writer_id as writerId', 'w.writer_name as writerName'])
+        .execute();
+};
+
 export async function getProcessingWriterIds(): Promise<{ text_writer: number }[]> {
     return await db
         .selectFrom('processing_jobs as pj')
