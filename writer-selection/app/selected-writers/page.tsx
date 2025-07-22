@@ -1,101 +1,121 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
-import { Card, CardContent } from "@/components/ui/card"
-import { Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from "next/navigation";
+import { FaSpinner, FaCheckCircle } from 'react-icons/fa';
+import Conversation from '../../components/Conversation';
+import { checkConversationExists, getWritersByConversation } from '../../services/api';
+import type { Writer } from '../../types';
 
-interface Writer {
-  id: number
-  name: string
-}
+const CARD_WIDTH = 200; // Same as in WriterCard
+const CARD_HEIGHT = 150; // Same as in WriterCard
+const FINAL_LEFT_OFFSET = 50; // Same as in WriterCard
+const FINAL_VERTICAL_SPACING = 20; // Same as in WriterCard
 
-const allWriters: Writer[] = [
-  { id: 1, name: "Maya Angelou" },
-  { id: 2, name: "James Baldwin" },
-  { id: 3, name: "Toni Morrison" },
-  { id: 4, name: "Gabriel García Márquez" },
-  { id: 5, name: "Virginia Woolf" },
-  { id: 6, name: "Haruki Murakami" },
-  { id: 7, name: "Chimamanda Ngozi Adichie" },
-  { id: 8, name: "Jorge Luis Borges" },
-  { id: 9, name: "Zadie Smith" },
-  { id: 10, name: "Ocean Vuong" },
-  { id: 11, name: "Elena Ferrante" },
-  { id: 12, name: "Ta-Nehisi Coates" },
-]
+const StaticWriterCard = ({ writer, index }: { writer: Writer; index: number }) => {
+    const topPosition = FINAL_LEFT_OFFSET + index * (CARD_HEIGHT + FINAL_VERTICAL_SPACING);
 
-const CARD_WIDTH = 200 // Same as WriterCard
-const CARD_HEIGHT = 150 // Same as WriterCard
-const FINAL_LEFT_OFFSET = 50 // Same as WriterCard
-const FINAL_VERTICAL_SPACING = 20 // Same as WriterCard
-
-export default function SelectedWritersPage() {
-  const searchParams = useSearchParams()
-  const selectedWriterIds = searchParams.getAll("writerId").map(Number)
-  const selectedWriters = allWriters.filter((writer) => selectedWriterIds.includes(writer.id))
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 overflow-hidden">
-      <div className="mx-auto max-w-7xl">
-        {/* Header - Same styling as original page */}
-        <div className="mb-12 text-center relative z-10">
-          <h1 className="mb-4 text-4xl font-light tracking-wide text-gray-900 md:text-5xl">Selected Writers</h1>
-          <p className="text-lg text-gray-600 font-light">Your chosen writers are displayed on the left</p>
-        </div>
-
-        {/* Container - Same styling as original page */}
-        <div className="relative mb-16 min-h-[700px] md:min-h-[800px] lg:min-h-[900px] xl:min-h-[1000px] border border-gray-200 rounded-3xl overflow-hidden bg-white/50 backdrop-blur-sm shadow-inner">
-          {/* Selected Writers positioned exactly like the end of transition */}
-          {selectedWriters.map((writer, index) => {
-            const finalX = FINAL_LEFT_OFFSET
-            const finalY = FINAL_LEFT_OFFSET + index * (CARD_HEIGHT + FINAL_VERTICAL_SPACING)
-
-            return (
-              <div
-                key={writer.id}
-                className="absolute"
-                style={{
-                  transform: `translate(${finalX}px, ${finalY}px)`,
-                  zIndex: 100 + index,
-                }}
-              >
-                <Card
-                  className="border-gray-800 bg-gray-900 text-white shadow-2xl scale-105 rounded-[3rem]"
-                  style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
-                >
-                  <CardContent className="p-8 text-center flex flex-col items-center justify-center h-full">
-                    <h3 className="text-xl font-medium mb-2 text-white">{writer.name}</h3>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white mt-4 animate-pulse">
-                      <Check className="h-5 w-5 text-gray-900" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Action Section */}
-        <div className="text-center relative z-10">
-          <Link href="/">
-            <Button
-              size="lg"
-              className="min-w-[250px] h-14 text-lg font-medium rounded-full transition-all duration-300 hover:shadow-lg"
+    return (
+        <div
+            className="absolute"
+            style={{
+                top: `${topPosition}px`,
+                left: `${FINAL_LEFT_OFFSET}px`,
+                width: CARD_WIDTH,
+                height: CARD_HEIGHT,
+                zIndex: 100 + index,
+            }}
+        >
+            <div
+                className="w-full h-full cursor-pointer transition-all duration-300 transform border-2 border-gray-800 bg-gray-900 text-white shadow-2xl scale-105 rounded-[3rem]"
             >
-              Select Different Writers
-            </Button>
-          </Link>
+                <div className="p-8 text-center flex flex-col items-center justify-center h-full">
+                    <h3 className="text-xl font-medium mb-2 text-white">{writer.writerName}</h3>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white mt-4">
+                        <FaCheckCircle className="h-5 w-5 text-gray-900" />
+                    </div>
+                </div>
+            </div>
         </div>
+    );
+};
 
-        {/* Additional content area - you can add more functionality here */}
-        <div className="mt-12 text-center">
-          <p className="text-lg text-gray-600 font-light">
-            You have selected {selectedWriters.length} writer{selectedWriters.length !== 1 ? "s" : ""}
-          </p>
+export default function ConversationPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const conversationId = searchParams.get('conversationId');
+    const [writers, setWriters] = useState<Writer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const validateAndLoad = async () => {
+            if (!conversationId) {
+                setError('Missing conversation ID');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const id = parseInt(conversationId, 10);
+                const [{ valid }, writersData] = await Promise.all([
+                    checkConversationExists(id),
+                    getWritersByConversation(id),
+                ]);
+
+                if (!valid) {
+                    setError('Conversation not found');
+                } else {
+                    setWriters(writersData);
+                }
+            } catch (err: any) {
+                setError(err.message || 'Failed to load conversation data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        validateAndLoad();
+    }, [conversationId]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <FaSpinner className="animate-spin text-4xl text-blue-600" />
+                <p className="ml-4 text-lg text-gray-700">Loading conversation...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+                <p className="text-xl text-red-600">Error: {error}</p>
+                <button
+                    className="mt-6 bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+                    onClick={() => router.push('/')}
+                >
+                    Go Back to Homepage
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 overflow-hidden">
+            <div className="relative flex h-full">
+                {/* Left Side: Static Writer Cards */}
+                <aside className="w-1/4 relative">
+                    {writers.map((writer, index) => (
+                        <StaticWriterCard key={writer.writerId} writer={writer} index={index} />
+                    ))}
+                </aside>
+
+                {/* Right Side: Conversation Area */}
+                <main className="flex-1 pl-[350px]">
+                    <Conversation conversationId={parseInt(conversationId!, 10)} />
+                </main>
+            </div>
         </div>
-      </div>
-    </div>
-  )
+    );
 }

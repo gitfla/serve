@@ -6,8 +6,10 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Check } from "lucide-react"
 
+import type { Writer } from "../types"
+
 interface WriterCardProps {
-  writer: { id: number; name: string }
+  writer: Writer
   isSelected: boolean
   isDisabled: boolean
   onSelect: (id: number) => void
