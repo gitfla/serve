@@ -1,4 +1,4 @@
-import {findBestMatchForPrompt, startConversation} from "../services/conversation.service";
+import {findBestMatchForPrompt, startConversation, getConversationDetails, getConversationMessages} from "../services/conversation.service";
 import { checkConversationExists as checkConversationExistsService } from '../services/conversation.service'
 import { NextWriter } from '../../../shared/nextWriter'
 
@@ -16,6 +16,37 @@ exports.startConversation = async (req, res) => {
     } catch (error) {
         console.error('Error starting conversation:', error)
         res.status(500).json({ error: 'Internal server error' })
+    }
+};
+
+exports.getConversationDetailsController = async (req, res) => {
+    try {
+        const conversationId = parseInt(req.params.conversationId, 10);
+        if (isNaN(conversationId)) {
+            return res.status(400).json({ error: 'Invalid conversation ID.' });
+        }
+        const details = await getConversationDetails(conversationId);
+        if (!details) {
+            return res.status(404).json({ error: 'Conversation details not found.' });
+        }
+        res.json(details);
+    } catch (error) {
+        console.error('Error fetching conversation details:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
+exports.getConversationMessagesController = async (req, res) => {
+    try {
+        const conversationId = parseInt(req.params.conversationId, 10);
+        if (isNaN(conversationId)) {
+            return res.status(400).json({ error: 'Invalid conversation ID.' });
+        }
+        const messages = await getConversationMessages(conversationId);
+        res.json(messages);
+    } catch (error) {
+        console.error('Error fetching conversation messages:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 };
 
