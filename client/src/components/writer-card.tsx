@@ -31,8 +31,8 @@ const MOBILE_FINAL_LEFT_OFFSET = 20
 const MOBILE_FINAL_TOP_OFFSET = 20
 const MOBILE_FINAL_HORIZONTAL_SPACING = 15
 
-const INITIAL_SPEED_MIN = 0.03
-const INITIAL_SPEED_MAX = 0.08
+const INITIAL_SPEED_MIN = 0.05
+const INITIAL_SPEED_MAX = 0.09
 const BOUNCE_SPEED_FACTOR = 1
 const TRANSITION_DURATION_SECONDS = 2.0
 
@@ -267,7 +267,7 @@ export function WriterCard({
                     isSelected
                         ? "border-gray-800 bg-gray-900 text-white shadow-2xl scale-105"
                         : isDisabled
-                            ? "cursor-not-allowed opacity-40 border-gray-200 backdrop-blur-sm hover:border-gray-400"
+                            ? "cursor-not-allowed opacity-10 border-gray-200 backdrop-blur-sm hover:border-gray-400"
                             : "border-gray-200 bg-white/80 backdrop-blur-sm hover:border-gray-400 shadow-lg"
                 }`}
                 style={{ width: cardWidth, height: cardHeight }}
