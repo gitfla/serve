@@ -10,7 +10,10 @@ import type {
     ConversationMessagesResponse,
 } from "../types"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"
+const API_BASE =
+    process.env.NODE_ENV === 'development'
+        ? 'http://localhost:8080'
+        : process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
 export async function uploadText(payload: UploadTextPayload) {
     return axios.post(`${API_BASE}/api/texts`, payload)
