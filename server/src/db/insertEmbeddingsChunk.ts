@@ -1,4 +1,4 @@
-import { db } from './database' // your initialized Kysely DB instance
+import db from './database' // your initialized Kysely DB instance
 import { sql } from 'kysely'
 
 export async function insertEmbeddingsChunk(writerId: number,
