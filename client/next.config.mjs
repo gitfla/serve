@@ -1,6 +1,3 @@
-const pkg = require('@netlify/next');
-const { withNetlify } = pkg;
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     eslint: {
@@ -14,4 +11,4 @@ const nextConfig = {
     },
 }
 
-export default withNetlify(nextConfig)
+export default nextConfig
