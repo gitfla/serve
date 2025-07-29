@@ -1,7 +1,7 @@
 import { embedPrompt } from "./cohere.service"
 import { sql } from "kysely"
 import { NextWriter } from "../../../shared/nextWriter"
-const db = require("../db/database")
+import db from '../db/database';
 
 // Create a conversation and link writers
 export const startConversation = async (writerIds: number[]): Promise<number> => {

@@ -1,6 +1,7 @@
 import {Kysely, PostgresDialect} from 'kysely';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { DB } from './dbtypes';
 
 dotenv.config({ path: './vars/.env'});
 
@@ -26,6 +27,9 @@ const pool = new Pool({
     ssl: DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
-export const db = new Kysely({
+
+const db = new Kysely<DB>({
     dialect: new PostgresDialect({ pool }),
 });
+
+export default db;

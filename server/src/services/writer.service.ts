@@ -1,4 +1,4 @@
-const db = require('../db/database');
+import db from '../db/database';
 
 export const fetchWriters = async () => {
     return await db
@@ -9,10 +9,15 @@ export const fetchWriters = async () => {
 
 export const getWritersByConversation = async (conversationId: number) => {
     return await db
-        .selectFrom('writers as w')
-        .innerJoin('conversation_writers as cw', 'w.writer_id', 'cw.writer_id')
-        .where('cw.conversation_id', '=', conversationId)
-        .select(['w.writer_id as writerId', 'w.writer_name as writerName'])
+        .selectFrom('writers')
+        .innerJoin('conversations_writers', (join) =>
+            join.onRef('writers.writer_id', '=', 'conversations_writers.writer_id')
+        )
+        .where('conversations_writers.conversation_id', '=', conversationId)
+        .select([
+            'writers.writer_id as writerId',
+            'writers.writer_name as writerName',
+        ])
         .execute();
 };
 

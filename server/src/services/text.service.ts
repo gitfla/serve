@@ -2,7 +2,8 @@ import {deleteBlob, uploadFileToGCS} from "./gcs.service";
 import {deleteWriterIfNecessary} from "./writer.service";
 
 const multer = require('multer')
-const db = require('../db/database');
+import db from '../db/database';
+
 
 const upload = multer({ storage: multer.memoryStorage() })
 

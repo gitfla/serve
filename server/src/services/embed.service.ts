@@ -7,7 +7,7 @@ import {embedPrompt, embedSentences} from "./cohere.service";
 
 // --- 1. INIT ---
 
-const db = require('../db/database');
+import db from '../db/database';
 const encoder = encoding_for_model('text-embedding-3-small')
 
 

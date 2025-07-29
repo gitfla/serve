@@ -4,7 +4,7 @@ import { downloadBlob } from './gcs.service'
 import {embedText, getLastProcessedSentenceIndex} from "./embed.service";
 import {enqueueTextProcessingTask} from "./task.service";
 
-const db = require('../db/database');
+import db from '../db/database';
 
 export async function handleProcessJob(textId: number) {
     console.log('processing started for job:', textId)
