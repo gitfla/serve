@@ -32,7 +32,7 @@ jobs:
 
       - name: 🐳 Build Docker image
         run: |
-          docker build -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}" -f server/Dockerfile .
+          docker build -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}" .
 
       - name: 🔑 Auth Docker with Artifact Registry
         run: |
