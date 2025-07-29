@@ -95,10 +95,27 @@ export const getLastSentence = async (conversationId: number): Promise<string> =
     return row.text ?? row.sentenceText
 }
 
+type MatchRow = {
+    sentence_id: number
+    text: string
+    sentence_index: number
+    writer_id: number
+    distance: number
+}
+
 // Search for best matching sentence
-export const getBestMatches = async (conversationId: number, vector: number[]) => {
+export const getBestMatches = async (
+    conversationId: number,
+    vector: number[]
+): Promise<MatchRow[]> => {
     const writers = await getWritersByConversation(conversationId)
     const writerIds = writers.map(w => w.writerId)
+
+    if (writerIds.length === 0) {
+        console.warn("⚠ No writers found for conversation:", conversationId)
+        return []
+    }
+
     const rawVector = sql.raw(`'[${vector.join(",")}]'::vector`)
 
     const query = sql`
@@ -116,15 +133,30 @@ export const getBestMatches = async (conversationId: number, vector: number[]) =
             LIMIT 5
     `
 
-    const results = await query.execute(db)
-    if (!results.rows.length) throw new Error("No matching sentences found.")
+    const result = await query.execute(db)
+    const rows = result.rows as MatchRow[]
+
 
     console.log("🔍 Top 5 most similar sentences:")
-    results.rows.forEach((row, i) => {
+    rows.forEach((row, i) => {
         console.log(`   ${i + 1}. [score=${row.distance.toFixed(4)}] "${row.text}"`)
     })
 
-    return results
+    return rows
+}
+
+const getBestSemanticMatch = async (
+    conversationId: number,
+    prompt: string
+): Promise<MatchRow> => {
+    const vector = await embedPrompt(prompt)
+    const results = await getBestMatches(conversationId, vector)
+
+    if (!results.length) {
+        throw new Error("No matching sentences found.")
+    }
+
+    return results[0]
 }
 
 export const findBestMatchForPrompt = async (
@@ -135,7 +167,7 @@ export const findBestMatchForPrompt = async (
     const finalPrompt = await resolveFinalPrompt(prompt, conversationId)
 
     if (!finalPrompt) {
-        console.log("Responding with random sentence.")
+        console.log("🌀 Prompt was empty or unresolved. Using random fallback.")
         return await respondWithRandomSentence(conversationId)
     }
 
@@ -183,23 +215,6 @@ const saveSystemMessage = async (conversationId: number, sentenceId: number) => 
         sender: "system",
         sentence_id: sentenceId,
     }).execute()
-}
-
-const getBestSemanticMatch = async (conversationId: number, prompt: string) => {
-    const vector = await embedPrompt(prompt)
-    const results = await getBestMatches(conversationId, vector)
-
-    if (!results.rows.length) {
-        throw new Error("No matching sentences found.")
-    }
-
-    // Log top 5 (optional)
-    console.log("🔍 Top 5 most similar sentences:")
-    results.rows.forEach((row, i) =>
-        console.log(`   ${i + 1}. [score=${row.distance.toFixed(4)}] "${row.text}"`)
-    )
-
-    return results.rows[0]
 }
 
 const respondWithRandomSentence = async (conversationId: number) => {

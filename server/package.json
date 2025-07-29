@@ -11,8 +11,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@dqbd/tiktoken": "^1.0.21",
     "@google-cloud/storage": "^7.16.0",
+    "@google-cloud/tasks": "^6.2.0",
     "@planetscale/database": "^1.19.0",
+    "bottleneck": "^2.19.5",
+    "cohere-ai": "^7.18.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -20,7 +24,8 @@
     "multer": "^2.0.1",
     "mysql2": "^3.14.1",
     "pg": "^8.16.0",
-    "postgres": "^3.4.7"
+    "postgres": "^3.4.7",
+    "sbd": "^1.0.19"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",

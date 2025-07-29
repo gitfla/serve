@@ -1,0 +1,53 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]  # or your default branch
+
+env:
+  REGION: southamerica-east1
+  SERVICE: serve-backend
+  REPO_NAME: serve-backend-repo
+  IMAGE_NAME: serve-backend
+  PROJECT_ID: serve-353822
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Set up Google Cloud auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: ☁️ Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: 🐳 Build Docker image
+        run: |
+          docker build -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}" -f server/Dockerfile .
+
+      - name: 🔑 Auth Docker with Artifact Registry
+        run: |
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev"
+
+      - name: 📦 Push image to Artifact Registry
+        run: |
+          docker push "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}"
+
+      - name: 🚀 Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${SERVICE} \
+            --image=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME} \
+            --platform=managed \
+            --region=${REGION} \
+            --allow-unauthenticated \
+            --set-env-vars="DB_HOST=${{ secrets.DB_HOST }},DB_PORT=${{ secrets.DB_PORT }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_NAME=${{ secrets.DB_NAME }},DB_SSL=${{ secrets.DB_SSL }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},GCP_QUEUE_NAME=${{ secrets.GCP_QUEUE_NAME }},GCP_LOCATION=${{ secrets.GCP_LOCATION }},TASK_HANDLER_URL=${{ secrets.TASK_HANDLER_URL }},COHERE_API_KEY=${{ secrets.COHERE_API_KEY }}"
+

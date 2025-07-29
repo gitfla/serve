@@ -26,8 +26,6 @@ const pool = new Pool({
     ssl: DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
-const db = new Kysely({
+export const db = new Kysely({
     dialect: new PostgresDialect({ pool }),
 });
-
-module.exports = db;

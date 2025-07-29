@@ -1,0 +1,16 @@
+# Ignore all local dependencies
+node_modules
+server/node_modules
+client/node_modules
+
+# Build output
+dist
+server/dist
+client/dist
+
+# Sensitive files
+server/vars/.env
+
+# Git
+.git
+.gitignore

@@ -1,6 +1,5 @@
 import {findBestMatchForPrompt, startConversation, getConversationDetails, getConversationMessages} from "../services/conversation.service";
 import { checkConversationExists as checkConversationExistsService } from '../services/conversation.service'
-import { NextWriter } from '../../../shared/nextWriter'
 
 exports.startConversation = async (req, res) => {
     try {

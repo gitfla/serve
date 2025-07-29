@@ -1,8 +1,8 @@
-const express = require('express');
+import { Router } from 'express';
 
 const { processJob } = require('../controllers/process.controller');
 
-const processRouter = express.Router();
+const processRouter = Router();
 
 processRouter.post('/',  processJob);
 

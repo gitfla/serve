@@ -1,11 +1,11 @@
-const express = require('express');
+import { Router } from 'express';
 const {
     fetchWriters,
     getProcessingWriters,
     getWritersByConversation
 } = require('../controllers/writer.controller');
 
-const writersRouter = express.Router();
+const writersRouter = Router();
 
 writersRouter.get('/', fetchWriters);
 writersRouter.get('/processing', getProcessingWriters);

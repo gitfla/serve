@@ -1,5 +1,6 @@
 // task.service.ts
 import { CloudTasksClient } from '@google-cloud/tasks'
+import { protos } from '@google-cloud/tasks'
 
 import dotenv from 'dotenv';
 import path from "path";
@@ -20,7 +21,7 @@ export const enqueueTextProcessingTask = async (textId: number, delaySeconds = 0
 
     const task = {
         httpRequest: {
-            httpMethod: 'POST',
+            httpMethod: protos.google.cloud.tasks.v2.HttpMethod.POST,
             url: `${TASK_URL}/internal/process`,
             headers: {
                 'Content-Type': 'application/json',
