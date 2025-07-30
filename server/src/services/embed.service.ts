@@ -92,6 +92,7 @@ export const embedText = async (
     for (const chunk of chunks) {
         // 1. Embed first
         const embeddings = await embedSentences(chunk)
+        const reducedEmbeddings = await reduceEmbeddings(embeddings)
 
         // 2. Prepare sentence insert
         const indexedSentences = chunk.map((text, i) => ({
@@ -111,9 +112,9 @@ export const embedText = async (
         const sentenceIndexes = inserted.map(row => row.sentence_index)
 
         // 4. Insert embeddings using those IDs
-        await insertEmbeddingsChunk(writerId, sentenceIds, embeddings)
+        await insertEmbeddingsChunk(writerId, sentenceIds, reducedEmbeddings)
 
-        console.log(`✅ Stored ${embeddings.length} embeddings`)
+        console.log(`✅ Stored ${embeddings.length} reduced embeddings`)
         console.log(`🔢 sentence_id range: ${sentenceIds[0]}–${sentenceIds[sentenceIds.length - 1]}`)
         console.log(`🔢 sentence_index range: ${sentenceIndexes[0]}–${sentenceIndexes[sentenceIndexes.length - 1]}`)
 
