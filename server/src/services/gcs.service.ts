@@ -3,9 +3,9 @@ import { Storage } from '@google-cloud/storage'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
-const storage = new Storage({
-    keyFilename: path.join(__dirname, '../../vars/gcs-key.json'), // adjust if needed
-})
+const gcsKey = JSON.parse(process.env.GCS_CREDENTIALS!)
+
+const storage = new Storage({ credentials: gcsKey })
 
 const bucketName = 'serve-blobs' // replace with actual name
 const bucket = storage.bucket(bucketName)
