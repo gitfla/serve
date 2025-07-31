@@ -5,7 +5,7 @@ import { protos } from '@google-cloud/tasks'
 import dotenv from 'dotenv';
 import path from "path";
 
-const tasksKey = JSON.parse(process.env.TASKS_CREDENTIALS)
+//const tasksKey = JSON.parse(process.env.TASKS_CREDENTIALS)
 
 //const client = new CloudTasksClient({ credentials: tasksKey })
 //dotenv.config({ path: './vars/.env'});
