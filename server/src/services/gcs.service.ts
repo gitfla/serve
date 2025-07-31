@@ -4,13 +4,13 @@ import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
 console.log("------------------------- getting gcsKey!:",process.env.GCS_CREDENTIALS )
-//const gcsKey = JSON.parse(process.env.GCS_CREDENTIALS)
-//console.log("------------------------- got gcsKey!:", gcsKey)
+const gcsKey = JSON.parse(process.env.GCS_CREDENTIALS!)
+console.log("------------------------- got gcsKey!:", gcsKey)
 
-//const storage = new Storage({ credentials: gcsKey })
+const storage = new Storage({ credentials: gcsKey })
 
 const bucketName = 'serve-blobs' // replace with actual name
-//const bucket = storage.bucket(bucketName)
+const bucket = storage.bucket(bucketName)
 
 /**
  * Uploads a file buffer directly to GCS.
@@ -25,7 +25,7 @@ export const uploadFileToGCS = async (
     destinationFolder: string = 'texts'
 ): Promise<string> => {
     const blobName = `${destinationFolder}/${uuidv4()}-${originalName}`
-    /*const file = bucket.file(blobName)
+    const file = bucket.file(blobName)
 
     await file.save(fileBuffer, {
         resumable: false,
@@ -35,7 +35,7 @@ export const uploadFileToGCS = async (
         },
     })
 
-    return file.name // blob ID to store in DB*/ return ""
+    return file.name // blob ID to store in DB
 }
 
 /**
@@ -44,10 +44,9 @@ export const uploadFileToGCS = async (
  * @returns A Buffer containing the blob's content.
  */
 export const downloadBlob = async (blobName: string): Promise<Buffer> => {
-    /*const file = bucket.file(blobName)
+    const file = bucket.file(blobName)
     const [contents] = await file.download()
-    return contents*/
-    return null
+    return contents
 }
 
 /**
@@ -56,8 +55,8 @@ export const downloadBlob = async (blobName: string): Promise<Buffer> => {
  * @returns A boolean indicating whether the deletion was successful.
  */
 export const deleteBlob = async (blobName: string): Promise<boolean> => {
-    //const file = bucket.file(blobName)
-    //await file.delete()
+    const file = bucket.file(blobName)
+    await file.delete()
     console.log(`Deleted blob: ${blobName}`)
     return true
 }
