@@ -23,3 +23,14 @@ app.get('/', (req, res) => {
 app.listen(8080, () => {
     console.log('server running on port 8080');
 })
+
+app.get('/debug/env', (req, res) => {
+    const envSubset = Object.keys(process.env)
+        .filter(key => key.includes('GCS') || key.includes('TASK') || key.includes('DB') || key.includes('COHERE'))
+        .reduce((obj, key) => {
+            obj[key] = process.env[key];
+            return obj;
+        }, {} as Record<string, string | undefined>);
+
+    res.json(envSubset);
+});

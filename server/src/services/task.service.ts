@@ -5,10 +5,10 @@ import { protos } from '@google-cloud/tasks'
 import dotenv from 'dotenv';
 import path from "path";
 
-const tasksKey = JSON.parse(process.env.TASKS_CREDENTIALS!)
+const tasksKey = JSON.parse(process.env.TASKS_CREDENTIALS)
 
-const client = new CloudTasksClient({ credentials: tasksKey })
-dotenv.config({ path: './vars/.env'});
+//const client = new CloudTasksClient({ credentials: tasksKey })
+//dotenv.config({ path: './vars/.env'});
 
 const PROJECT = process.env.GCP_PROJECT_ID!
 const QUEUE = process.env.GCP_QUEUE_NAME!         // e.g. "process-book-queue"
@@ -17,7 +17,7 @@ const TASK_URL = process.env.TASK_HANDLER_URL!    // e.g. https://your-domain.co
 
 export const enqueueTextProcessingTask = async (textId: number, delaySeconds = 0) => {
     console.log("PROJECT, QUEUE, LOCATION, TASK_URL", PROJECT, QUEUE, LOCATION, TASK_URL);
-    const parent = client.queuePath(PROJECT, LOCATION, QUEUE)
+   // const parent = client.queuePath(PROJECT, LOCATION, QUEUE)
 
     const task = {
         httpRequest: {
@@ -33,7 +33,7 @@ export const enqueueTextProcessingTask = async (textId: number, delaySeconds = 0
         },
     }
 
-    const [response] = await client.createTask({ parent, task })
-    console.log(`🕒 Task scheduled to run in ${delaySeconds}s:`, response.name)
-    return response
+    //const [response] = await client.createTask({ parent, task })
+    //console.log(`🕒 Task scheduled to run in ${delaySeconds}s:`, response.name)
+    //return response
 }
