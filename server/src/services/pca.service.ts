@@ -1,4 +1,5 @@
-const reduceEmbeddings = async (embeddings: number[][], outputDim = 256): Promise<number[][]> => {
+// src/services/pca.service.ts
+export const reduceEmbeddings = async (embeddings: number[][], outputDim = 256): Promise<number[][]> => {
     const res = await fetch("https://pca-service-822718896837.southamerica-east1.run.app/pca", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

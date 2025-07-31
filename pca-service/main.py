@@ -4,6 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sklearn.decomposition import PCA
 import numpy as np
 
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 
 # Optional: allow CORS if needed
@@ -20,7 +24,16 @@ class PCARequest(BaseModel):
 
 @app.post("/pca")
 async def reduce_embeddings(req: PCARequest):
-    arr = np.array(req.embeddings)
-    pca = PCA(n_components=req.n_components)
-    reduced = pca.fit_transform(arr)
-    return reduced.tolist()
+    logger.info("📩 /pca endpoint called")
+    try:
+        arr = np.array(req.embeddings)
+        logger.info(f"📊 Input shape: {arr.shape}, requested components: {req.n_components}")
+
+        pca = PCA(n_components=req.n_components)
+        reduced = pca.fit_transform(arr)
+
+        logger.info(f"✅ PCA reduction successful, output shape: {reduced.shape}")
+        return reduced.tolist()
+    except Exception as e:
+        logger.exception("❌ Error during PCA reduction")
+        return {"error": str(e)}

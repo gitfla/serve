@@ -4,6 +4,7 @@ import * as sbd from 'sbd'
 import { encoding_for_model } from '@dqbd/tiktoken'
 import { sql } from 'kysely'
 import {embedPrompt, embedSentences} from "./cohere.service";
+import {reduceEmbeddings} from "./pca.service";
 
 // --- 1. INIT ---
 
