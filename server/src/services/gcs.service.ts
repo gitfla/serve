@@ -3,7 +3,9 @@ import { Storage } from '@google-cloud/storage'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
+console.log("------------------------- getting gcsKey!:",process.env.GCS_CREDENTIALS )
 const gcsKey = JSON.parse(process.env.GCS_CREDENTIALS!)
+console.log("------------------------- got gcsKey!:", gcsKey)
 
 const storage = new Storage({ credentials: gcsKey })
 
