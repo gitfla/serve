@@ -1,7 +1,7 @@
 "use client"
 
-import TextUpload from "../../components/TextUpload";
-import TextAdmin from "../../components/TextAdmin";
+import TextUpload from "../../components/text-upload";
+import TextAdmin from "../../components/text-admin";
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 export default function UploadPage() {
