@@ -98,7 +98,6 @@ Feel free to explore, fork, and contribute to this project.
 
 *   **Flavio Fiszman**
     *   Email: flaviofiszman@gmail.com
-    *   [Link to your LinkedIn/GitHub profile (optional)]
 
 ## 📄 License
 
