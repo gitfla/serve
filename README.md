@@ -20,6 +20,22 @@ npm run dev
 ```
 The enviroment variables need to be modified in `.env` and `.env.yaml` files to point to the correct database and GCS storage.
 
+### Deploying PCA backend
+
+`docker build -t pca-service .   `
+
+```
+gcloud builds submit pca-service \
+--tag southamerica-east1-docker.pkg.dev/serve-353822/pca-service-repo/pca-service
+```
+
+```
+gcloud run deploy pca-service \
+--image=southamerica-east1-docker.pkg.dev/serve-353822/pca-service-repo/pca-service \
+--platform=managed \
+--region=southamerica-east1 \
+--allow-unauthenticated
+```
 
 ## Authors
 

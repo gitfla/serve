@@ -6,7 +6,7 @@ const processRouter = require('./routes/process.route');
 const conversationRouter = require('./routes/conversation.route');
 const app = express();
 
-require('dotenv').config();
+require('dotenv').config({ path: '../vars/.env'});
 
 app.use(cors());
 app.use(express.json());

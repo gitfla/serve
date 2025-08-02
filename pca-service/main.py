@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from sklearn.decomposition import PCA
 import numpy as np
+import logging
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -23,9 +24,10 @@ class PCARequest(BaseModel):
     n_components: int = 256
 
 @app.post("/pca")
-async def reduce_embeddings(req: PCARequest):
+async def reduce_embeddings(req: PCARequest, request: Request):
     logger.info("📩 /pca endpoint called")
     try:
+        body = await request.body()
         arr = np.array(req.embeddings)
         logger.info(f"📊 Input shape: {arr.shape}, requested components: {req.n_components}")
 

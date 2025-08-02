@@ -3,11 +3,18 @@ import { Storage } from '@google-cloud/storage'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
-console.log("------------------------- getting gcsKey!:",process.env.GCS_CREDENTIALS )
-const gcsKey = JSON.parse(process.env.GCS_CREDENTIALS!)
-console.log("------------------------- got gcsKey!:", gcsKey)
+let storage : Storage
 
-const storage = new Storage({ credentials: gcsKey })
+if (process.env.GCS_CREDENTIALS) {
+    console.log('🚀 Using credentials from environment variable')
+    const credentials = JSON.parse(process.env.GCS_CREDENTIALS)
+    storage = new Storage({ credentials })
+} else {
+    console.log('🛠️ Using local key file')
+    storage = new Storage({
+        keyFilename: path.join(__dirname, '../../vars/gcs-key.json'), // adjust if needed
+    })
+}
 
 const bucketName = 'serve-blobs' // replace with actual name
 const bucket = storage.bucket(bucketName)

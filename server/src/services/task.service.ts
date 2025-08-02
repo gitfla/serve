@@ -2,13 +2,17 @@
 import { CloudTasksClient } from '@google-cloud/tasks'
 import { protos } from '@google-cloud/tasks'
 
-import dotenv from 'dotenv';
 import path from "path";
 
-const tasksKey = JSON.parse(process.env.TASKS_CREDENTIALS!)
-
-const client = new CloudTasksClient({ credentials: tasksKey })
-dotenv.config({ path: './vars/.env'});
+let client : CloudTasksClient
+if (process.env.TASKS_CREDENTIALS) {
+    console.log('🚀 Using credentials from environment variable')
+    const credentials = JSON.parse(process.env.TASKS_CREDENTIALS)
+    client = new CloudTasksClient({ credentials })
+} else {
+    console.log('🛠️ Using local key file')
+    client = new CloudTasksClient({keyFilename: path.join(__dirname, '../../vars/task-key.json')})
+}
 
 const PROJECT = process.env.GCP_PROJECT_ID!
 const QUEUE = process.env.GCP_QUEUE_NAME!         // e.g. "process-book-queue"
