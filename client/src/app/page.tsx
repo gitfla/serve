@@ -108,11 +108,12 @@ export default function WriterSelection() {
         setAppState("conversation")
       } catch (err: any) {
         console.error("Error loading conversation:", err)
+        window.history.replaceState(null, "", "/")
 
         if (err.response?.status === 404) {
-          setError("Conversation not found. Please start a new conversation.")
+          setError("Conversation not found.")
         } else {
-          setError(`Failed to load conversation: ${err.message || "Unknown error"}. Please try again.`)
+          setError(`Failed to load conversation. Please try again.`)
         }
 
         setAppState("selection")
@@ -232,15 +233,6 @@ export default function WriterSelection() {
   const isInConversation = appState === "conversation"
   const isLoadingConversation = appState === "loading-conversation"
 
-  if (loading || isLoadingConversation) {
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-          <div className="text-lg text-gray-600 font-light">
-            {loading ? "Loading writers..." : "Loading conversation..."}
-          </div>
-        </div>
-    )
-  }
 
   if (error) {
     return (
@@ -453,6 +445,16 @@ export default function WriterSelection() {
               </>
           )}
         </div>
+      {/* Splash screen */}
+      <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 transition-opacity duration-700"
+          style={{
+            opacity: loading || isLoadingConversation ? 1 : 0,
+            pointerEvents: loading || isLoadingConversation ? "auto" : "none",
+          }}
+      >
+        <h1 className="text-6xl font-extralight tracking-[0.3em] text-gray-400 uppercase">Serve</h1>
+      </div>
       </div>
   )
 }
