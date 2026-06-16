@@ -48,6 +48,7 @@ export const getWritersByConversation = async (conversationId: number) => {
 // Conversation details
 export const getConversationDetails = async (conversationId: number) => {
     const writers = await getWritersByConversation(conversationId)
+    if (writers.length === 0) return null
     return { conversationId, writers }
 }
 
