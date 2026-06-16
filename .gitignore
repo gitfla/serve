@@ -57,3 +57,6 @@ server/vars/
 *.swp
 *.bak
 *.tmp
+
+# Reference texts
+utils/texts/
