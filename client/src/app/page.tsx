@@ -234,18 +234,6 @@ export default function WriterSelection() {
   const isLoadingConversation = appState === "loading-conversation"
 
 
-  if (error) {
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-          <div className="text-lg text-red-600 font-light bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-red-200">
-            {error}
-            <Button onClick={() => setError(null)} variant="ghost" className="mt-4 text-red-500 hover:text-red-700">
-              Dismiss
-            </Button>
-          </div>
-        </div>
-    )
-  }
 
   return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative">
@@ -445,6 +433,17 @@ export default function WriterSelection() {
               </>
           )}
         </div>
+      {/* Error overlay */}
+      {error && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 bg-white/80 backdrop-blur-sm rounded-2xl px-10 py-8 shadow-lg border border-gray-200 text-center">
+              <p className="text-gray-600 font-light text-lg">{error}</p>
+              <Button onClick={() => setError(null)} variant="ghost" className="text-gray-400 hover:text-gray-600 rounded-full">
+                Dismiss
+              </Button>
+            </div>
+          </div>
+      )}
       {/* Splash screen */}
       <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 transition-opacity duration-700"
